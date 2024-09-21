@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: springboot
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app: springboot
+    origin: binblee
+spec:
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: springboot
+      origin: binblee
+  template:
+    metadata:
+      labels:
+        app: springboot
+        origin: binblee
+    spec:
+      serviceAccountName: springboot
+      containers:
+        - name: springboot
+          image: "binblee/springboot-helm-chart:jre-17"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+  strategy:
+    blueGreen:
+      activeService: springboot
+      previewService: springboot-preview-service
+      autoPromotionEnabled: false
+      scaleDownDelaySeconds: 20

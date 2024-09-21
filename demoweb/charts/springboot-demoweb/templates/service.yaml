@@ -1,15 +1,33 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "springboot-demoweb.fullname" . }}
-  labels:
-    {{- include "springboot-demoweb.labels" . | nindent 4 }}
+  name: springboot
+  namespace: default
 spec:
-  type: {{ .Values.service.type }}
+  type: ClusterIP
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: 80
+      targetPort: 8080
       protocol: TCP
       name: http
   selector:
-    {{- include "springboot-demoweb.selectorLabels" . | nindent 4 }}
+    app: springboot
+    origin: binblee
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-preview-service
+  namespace: default
+  annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: springboot
+    origin: binblee
